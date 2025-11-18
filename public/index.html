@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Görsel Üretici - yapan-zeka.com</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .style-section {
+            margin-bottom: 30px;
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .style-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .style-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .style-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .style-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .style-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-container.active {
+            display: block;
+        }
+
+        .result-image {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 15px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #ff4757;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .style-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .preview-item {
+                width: 120px;
+                height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 AI Görsel Üretici</h1>
+        <p class="subtitle">Fotoğraflarınızı yükleyin ve AI ile yeni görseller oluşturun</p>
+
+        <div class="upload-section">
+            <label class="upload-label">1. Fotoğraflarınızı Yükleyin (2-3 adet)</label>
+            <div class="upload-area" id="uploadArea">
+                <div style="font-size: 48px; margin-bottom: 10px;">📸</div>
+                <div style="font-weight: 600; margin-bottom: 5px;">Fotoğraf yüklemek için tıklayın</div>
+                <div style="color: #666; font-size: 14px;">veya fotoğrafları buraya sürükleyin</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+            <div class="preview-container" id="previewContainer"></div>
+        </div>
+
+        <div class="style-section">
+            <label class="upload-label">2. Stil Seçin</label>
+            <div class="style-grid">
+                <div class="style-option" data-style="anime">
+                    <div class="style-icon">🎌</div>
+                    <div class="style-name">Anime</div>
+                </div>
+                <div class="style-option selected" data-style="cinematic">
+                    <div class="style-icon">🎬</div>
+                    <div class="style-name">Sinematik</div>
+                </div>
+                <div class="style-option" data-style="studio">
+                    <div class="style-icon">📷</div>
+                    <div class="style-name">Stüdyo</div>
+                </div>
+                <div class="style-option" data-style="artistic">
+                    <div class="style-icon">🎨</div>
+                    <div class="style-name">Sanatsal</div>
+                </div>
+                <div class="style-option" data-style="realistic">
+                    <div class="style-icon">✨</div>
+                    <div class="style-name">Realistik</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="generate-btn" id="generateBtn" disabled>Görsel Oluştur</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Görseliniz oluşturuluyor... (30-60 saniye sürebilir)</div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="result-container" id="resultContainer">
+            <img class="result-image" id="resultImage" alt="Oluşturulan Görsel">
+            <button class="download-btn" id="downloadBtn">📥 Görseli İndir</button>
+        </div>
+    </div>
+
+    <script>
+        // Vercel backend API endpoint - API key güvenli şekilde backend'de saklanıyor
+        const API_URL = '/api/generate-image'; // Vercel deploy edildikten sonra: 'https://your-project.vercel.app/api/generate-image'
+        
+        let uploadedFiles = [];
+        let selectedStyle = 'cinematic';
+
+        const stylePrompts = {
+            anime: 'anime style, vibrant colors, manga art, Japanese animation, detailed anime character',
+            cinematic: 'cinematic lighting, dramatic composition, film photography, movie scene, professional color grading',
+            studio: 'professional studio photography, clean background, perfect lighting, high quality portrait',
+            artistic: 'artistic painting, oil painting style, impressionist art, creative interpretation',
+            realistic: 'photorealistic, ultra detailed, 8k quality, natural lighting, high resolution photography'
+        };
+
+        // Upload area events
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const generateBtn = document.getElementById('generateBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            if (uploadedFiles.length + files.length > 3) {
+                showError('En fazla 3 fotoğraf yükleyebilirsiniz!');
+                return;
+            }
+
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    uploadedFiles.push(file);
+                    displayPreview(file);
+                }
+            });
+
+            updateGenerateButton();
+        }
+
+        function displayPreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="remove-btn" onclick="removeImage(${uploadedFiles.length - 1})">×</button>
+                `;
+                previewContainer.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.removeImage = function(index) {
+            uploadedFiles.splice(index, 1);
+            previewContainer.innerHTML = '';
+            uploadedFiles.forEach(file => displayPreview(file));
+            updateGenerateButton();
+        };
+
+        // Style selection
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.style-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedStyle = option.dataset.style;
+            });
+        });
+
+        function updateGenerateButton() {
+            generateBtn.disabled = uploadedFiles.length < 2;
+        }
+
+        // Generate image
+        generateBtn.addEventListener('click', async () => {
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('resultContainer').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
+            generateBtn.disabled = true;
+
+            try {
+                // Create combined image
+                const combinedImage = await combineImages(uploadedFiles);
+                
+                // Create prompt
+                const prompt = `${stylePrompts[selectedStyle]}, professional composition, two people together, side by side portrait, harmonious colors, masterpiece quality`;
+
+                // Call Vercel Backend API
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'API isteği başarısız oldu');
+                }
+
+                const blob = await response.blob();
+                const imageUrl = URL.createObjectURL(blob);
+
+                document.getElementById('resultImage').src = imageUrl;
+                document.getElementById('resultContainer').classList.add('active');
+                
+            } catch (error) {
+                showError('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+                console.error(error);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        });
+
+        async function combineImages(files) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const images = [];
+                let loadedCount = 0;
+
+                files.forEach((file, index) => {
+                    const img = new Image();
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        img.onload = () => {
+                            images[index] = img;
+                            loadedCount++;
+                            
+                            if (loadedCount === files.length) {
+                                // Set canvas size
+                                const width = 512;
+                                const height = 512;
+                                canvas.width = width * images.length;
+                                canvas.height = height;
+
+                                // Draw images side by side
+                                images.forEach((image, i) => {
+                                    ctx.drawImage(image, i * width, 0, width, height);
+                                });
+
+                                canvas.toBlob(resolve);
+                            }
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+        }
+
+        // Download button
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = document.getElementById('resultImage').src;
+            link.download = `yapan-zeka-ai-gorsel-${Date.now()}.png`;
+            link.click();
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+            setTimeout(() => {
+                errorDiv.classList.remove('active');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,2 +1,2 @@
-# portre
-ai portre
+# ai-gorsel-project
+ai-gorsel-project
